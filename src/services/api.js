@@ -1,9 +1,10 @@
 import axios from 'axios';
 
+const BASE_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
 const apiClient = axios.create({
-    // baseURL: import.meta.env.BASE_URL, // Update port if different
-    baseURL: 'http://localhost:5000/api',
-    withCredentials: true, // MUST be true to send/receive httpOnly cookies
+    baseURL: BASE_API_URL,
+    withCredentials: true,
     headers: {
         'Content-Type': 'application/json'
     }
@@ -15,15 +16,35 @@ export const setAccessToken = (token) => {
     currentAccessToken = token;
 };
 
-// Request Interceptor: Attach Access Token
+export const getAccessToken = () => currentAccessToken;
+
+let inflightRefresh = null;
+
+export const silentRefresh = () => {
+    if (inflightRefresh) return inflightRefresh;
+
+    inflightRefresh = axios
+        .get(`${BASE_API_URL}/auth/refresh`, { withCredentials: true })
+        .then(({ data }) => {
+            const token = data?.accessToken;
+            if (token) setAccessToken(token);
+            return token;
+        })
+        .finally(() => {
+            inflightRefresh = null;
+        });
+
+    return inflightRefresh;
+};
+
 apiClient.interceptors.request.use((config) => {
     if (currentAccessToken) {
+        config.headers = config.headers ?? {};
         config.headers.Authorization = `Bearer ${currentAccessToken}`;
     }
     return config;
 }, (error) => Promise.reject(error));
 
-// Response Interceptor: Silent Refresh Logic
 apiClient.interceptors.response.use(
     (response) => response,
     async (error) => {
@@ -32,20 +53,14 @@ apiClient.interceptors.response.use(
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
             try {
-                const { data } = await axios.get(`${import.meta.env.BASE_URL}/api/auth/refresh`, {
-                    withCredentials: true 
-                });
-                
-                setAccessToken(data.accessToken);
-                originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
-                
+                await silentRefresh();
                 return apiClient(originalRequest);
             } catch (refreshError) {
                 setAccessToken(null);
-                window.location.href = '/'; // Redirect to login on refresh fail
                 return Promise.reject(refreshError);
             }
         }
+
         return Promise.reject(error);
     }
 );

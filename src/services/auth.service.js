@@ -1,4 +1,4 @@
-import apiClient, { setAccessToken } from './api';
+import apiClient, { setAccessToken, silentRefresh } from './api';
 
 export const authService = {
     signup: async (data) => {
@@ -7,6 +7,7 @@ export const authService = {
     },
     login: async (credentials) => {
         const response = await apiClient.post('/auth/login', credentials);
+        console.log(response);
         if (response.data.accessToken) {
             setAccessToken(response.data.accessToken);
         }
@@ -19,5 +20,18 @@ export const authService = {
     logout: async () => {
         await apiClient.delete('/auth/logout');
         setAccessToken(null);
+    },
+    refresh: async () => {
+        const accessToken = await silentRefresh();
+        return { accessToken };
+    },
+    forgetPassword: async (email) => {
+        const response = await apiClient.post('/auth/forget-password', { email });
+        return response.data;
+    },
+    resetPassword: async (token, newPassword, confirmPassword) => {
+        const response = await apiClient.post(`/auth/reset-password/${token}`, { newPassword, confirmPassword });
+        return response.data;
     }
+
 };
