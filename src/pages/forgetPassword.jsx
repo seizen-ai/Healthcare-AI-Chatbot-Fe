@@ -4,14 +4,14 @@ import { authService } from '../services/auth.service';
 import SeizenLogo from '../components/SeizenLogo';
 
 export default function ForgetPassword() {
-    const [email, setEmail] = useState('');
+    const [identifier, setIdentifier] = useState('');
     const [status, setStatus] = useState({ loading: false, message: '', error: '' });
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setStatus({ loading: true, message: '', error: '' });
         try {
-            await authService.forgetPassword(email);
+            await authService.forgetPassword(identifier);
             setStatus({ loading: false, message: 'Check your inbox — a reset link is on its way.', error: '' });
         } catch (err) {
             setStatus({ loading: false, message: '', error: err.response?.data?.message || 'Something went wrong. Try again.' });
@@ -27,15 +27,14 @@ export default function ForgetPassword() {
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="field">
-                        <label htmlFor="email">Email address</label>
+                        <label htmlFor="identifier">Email address or Username</label>
                         <input
-                            id="email"
-                            type="email"
-                            autoComplete="email"
+                            id="identifier"
+                            type="text"
+                            autoComplete="identifier"
                             required
-                            placeholder="you@example.com"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            value={identifier}
+                            onChange={(e) => setIdentifier(e.target.value)}
                         />
                     </div>
 

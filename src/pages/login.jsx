@@ -4,7 +4,7 @@ import { authService } from '../services/auth.service';
 import SeizenLogo from '../components/SeizenLogo';
 
 export default function Login() {
-    const [formData, setFormData] = useState({ email: '', password: '' });
+    const [formData, setFormData] = useState({ identifier: '', password: '' });
     const [status, setStatus] = useState({ loading: false, error: '' });
     const navigate = useNavigate();
 
@@ -12,7 +12,7 @@ export default function Login() {
         e.preventDefault();
         setStatus({ loading: true, error: '' });
         try {
-            await authService.login({ email: formData.email, password: formData.password });
+            await authService.login({ identifier: formData.identifier, password: formData.password });
             navigate('/dashboard');
         } catch (err) {
             setStatus({
@@ -33,12 +33,11 @@ export default function Login() {
                     <div className="field">
                         <label htmlFor="email">Email address Or Username</label>
                         <input
-                            id="email"
-                            autoComplete="email"
+                            id="identifier"
+                            autoComplete="identifier"
                             required
-                            placeholder="you@example.com"
-                            value={formData.email}
-                            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                            value={formData.identifier}
+                            onChange={(e) => setFormData({ ...formData, identifier: e.target.value })}
                         />
                     </div>
 
