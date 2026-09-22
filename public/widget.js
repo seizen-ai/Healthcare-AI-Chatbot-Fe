@@ -12,7 +12,7 @@
         return;
     }
 
-    const API_URL = 'http://localhost:5000/api'; // In production, this should point to your real backend URL
+    const API_URL = 'https://healthcare-ai-chatbot-be.onrender.com/api'; // In production, this should point to your real backend URL
     const GREETING_TEXT = 'Have a query? Chat with us';
     const GREETING_DELAY_MS = 4000;
     const GREETING_STORAGE_KEY = `seizen_greeting_dismissed_${publicKey}`;
