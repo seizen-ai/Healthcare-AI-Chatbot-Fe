@@ -31,10 +31,9 @@ export default function Login() {
 
                 <form onSubmit={handleSubmit} className="auth-form">
                     <div className="field">
-                        <label htmlFor="email">Email address</label>
+                        <label htmlFor="email">Email address Or Username</label>
                         <input
                             id="email"
-                            type="email"
                             autoComplete="email"
                             required
                             placeholder="you@example.com"
