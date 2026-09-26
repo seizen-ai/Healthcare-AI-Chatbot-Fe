@@ -26,8 +26,8 @@ export const hospitalService = {
 
         return { data: [], nextCursor: null };
     },
-    activateBot: async (hospitalId) => {
-        const response = await apiClient.post(`/hospital/${hospitalId}/activate`);
+    activateBot: async (hospitalId, payload) => {
+        const response = await apiClient.post(`/hospital/${hospitalId}/activate`, payload);
         return response.data;
     }
 };
