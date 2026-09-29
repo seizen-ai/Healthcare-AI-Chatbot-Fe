@@ -30,4 +30,20 @@ export const hospitalService = {
         const response = await apiClient.post(`/hospital/${hospitalId}/activate`, payload);
         return response.data;
     }
+// New method to upload a knowledge document file
+    uploadKnowledgeDocs: async (hospitalId, file) => {
+        const form = new FormData();
+        form.append('file', file);
+        const response = await apiClient.post(
+            `/hospital/${hospitalId}/file/upload`,
+            form,
+            {
+                headers: {
+                    // Let the browser set the multipart boundary
+                    'Content-Type': 'multipart/form-data',
+                },
+            }
+        );
+        return response.data; // Expected to contain { id, fileName, fileRef, mimeType, sizeBytes }
+    },
 };

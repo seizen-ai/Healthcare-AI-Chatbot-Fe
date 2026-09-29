@@ -21,6 +21,32 @@ export default function Activation() {
     const [crawlType, setCrawlType] = useState('website_crawl');
     const [consentChecked, setConsentChecked] = useState(false);
     const [selectedFiles, setSelectedFiles] = useState([]);
+    const [uploadedDocs, setUploadedDocs] = useState([]);
+
+    const handleFileChange = async (e, hospitalId) => {
+        const files = Array.from(e.target.files);
+        setSelectedFiles(files);
+        if (files.length === 0) {
+            setUploadedDocs([]);
+            return;
+        }
+        try {
+            const uploads = await Promise.all(
+                files.map(file =>
+                    hospitalService.uploadKnowledgeDocs(hospitalId, file).then(res => ({
+                        fileName: file.name,
+                        mimeType: file.type || 'application/octet-stream',
+                        fileRef: res.fileRef,
+                    }))
+                )
+            );
+            setUploadedDocs(uploads);
+        } catch (err) {
+            console.error('Upload error:', err);
+            alert('Failed to upload documents.');
+            setUploadedDocs([]);
+        }
+    };
     const [copiedSnippet, setCopiedSnippet] = useState(null);
     const [revealedWidgets, setRevealedWidgets] = useState({});
 
@@ -67,11 +93,7 @@ export default function Activation() {
                     alert('Please select at least one document to crawl.');
                     return;
                 }
-                payload.documents = selectedFiles.map((file, index) => ({
-                    fileName: file.name,
-                    mimeType: file.type || 'application/octet-stream',
-                    fileRef: `temp_ref_${Date.now()}_${index}`, // Mocking fileRef until actual upload is implemented
-                }));
+                payload.documents = uploadedDocs;
             }
 
             await hospitalService.activateBot(hospital._id, payload);
@@ -225,7 +247,7 @@ export default function Activation() {
                                                         <input 
                                                             type="file" 
                                                             multiple
-                                                            onChange={(e) => setSelectedFiles(Array.from(e.target.files))}
+                                                            onChange={(e) => handleFileChange(e, hospital._id)}
                                                             style={{ 
                                                                 width: '100%', 
                                                                 padding: '6px', 
@@ -246,7 +268,7 @@ export default function Activation() {
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button
                                                         onClick={() => handleActivate(hospital)}
-                                                        disabled={activatingId === hospital._id || (crawlType === 'website_crawl' && !consentChecked)}
+                                                        disabled={activatingId === hospital._id || (crawlType === 'website_crawl' && !consentChecked) || (crawlType === 'document_crawl' && uploadedDocs.length === 0)}
                                                         className="hosp-btn-primary"
                                                         style={{ flex: 1, justifyContent: 'center' }}
                                                     >
