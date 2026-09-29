@@ -34,9 +34,11 @@ export default function Activation() {
             const uploads = await Promise.all(
                 files.map(file =>
                     hospitalService.uploadKnowledgeDocs(hospitalId, file).then(res => ({
-                        fileName: file.name,
-                        mimeType: file.type || 'application/octet-stream',
+                        // Use the exact values returned by the backend upload response
+                        fileName: res.fileName,
+                        mimeType: res.mimeType,
                         fileRef: res.fileRef,
+                        sizeBytes: res.sizeBytes,
                     }))
                 )
             );
@@ -47,6 +49,7 @@ export default function Activation() {
             setUploadedDocs([]);
         }
     };
+
     const [copiedSnippet, setCopiedSnippet] = useState(null);
     const [revealedWidgets, setRevealedWidgets] = useState({});
 
@@ -214,8 +217,8 @@ export default function Activation() {
                                             <div className="hosp-activation-menu" style={{ padding: '12px', border: '1px solid var(--color-border)', borderRadius: '8px', marginTop: '10px' }}>
                                                 <div style={{ marginBottom: '10px' }}>
                                                     <label style={{ fontSize: '14px', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Crawl Type</label>
-                                                    <select 
-                                                        value={crawlType} 
+                                                    <select
+                                                        value={crawlType}
                                                         onChange={(e) => setCrawlType(e.target.value)}
                                                         style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--color-border)', backgroundColor: 'var(--color-bg)', color: 'var(--color-text)' }}
                                                     >
@@ -226,9 +229,9 @@ export default function Activation() {
 
                                                 {crawlType === 'website_crawl' && (
                                                     <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
-                                                        <input 
-                                                            type="checkbox" 
-                                                            id={`consent-${hospital._id}`} 
+                                                        <input
+                                                            type="checkbox"
+                                                            id={`consent-${hospital._id}`}
                                                             checked={consentChecked}
                                                             onChange={(e) => setConsentChecked(e.target.checked)}
                                                             style={{ marginTop: '4px' }}
@@ -244,13 +247,13 @@ export default function Activation() {
                                                         <label style={{ fontSize: '13px', color: 'var(--color-text-muted)', marginBottom: '6px', display: 'block' }}>
                                                             Upload Documents
                                                         </label>
-                                                        <input 
-                                                            type="file" 
+                                                        <input
+                                                            type="file"
                                                             multiple
                                                             onChange={(e) => handleFileChange(e, hospital._id)}
-                                                            style={{ 
-                                                                width: '100%', 
-                                                                padding: '6px', 
+                                                            style={{
+                                                                width: '100%',
+                                                                padding: '6px',
                                                                 fontSize: '13px',
                                                                 color: 'var(--color-text)',
                                                                 border: '1px dashed var(--color-border)',
