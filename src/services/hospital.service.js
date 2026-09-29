@@ -29,8 +29,8 @@ export const hospitalService = {
     activateBot: async (hospitalId, payload) => {
         const response = await apiClient.post(`/hospital/${hospitalId}/activate`, payload);
         return response.data;
-    }
-// New method to upload a knowledge document file
+    },
+    // New method to upload a knowledge document file
     uploadKnowledgeDocs: async (hospitalId, file) => {
         const form = new FormData();
         form.append('file', file);
