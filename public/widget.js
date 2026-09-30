@@ -19,7 +19,7 @@
 
     // Inject styles
     // Colors are exposed as CSS variables scoped to the widget container so a
-    // future "custom theme" feature can override them per hospital without
+    // future "custom theme" feature can override them per chatbot without
     // touching this file (e.g. by injecting a small style block that sets
     // --seizen-primary, --seizen-bg, etc. before this script runs).
     const styles = document.createElement('style');

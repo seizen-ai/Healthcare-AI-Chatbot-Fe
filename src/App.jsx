@@ -3,7 +3,7 @@ import Login from './pages/login';
 import Signup from './pages/signup';
 import VerifyEmail from './pages/verifyEmail';
 import DashboardLayout from './layouts/DashboardLayout';
-import Hospital from './pages/hospital';
+import Chatbot from './pages/chatbot';
 import Activation from './pages/activation';
 import ForgetPassword from './pages/forgetPassword';
 import ResetPassword from './pages/resetPassword';
@@ -21,8 +21,8 @@ function App() {
 
         {/* Protected Dashboard Area */}
         <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="/dashboard/hospital" replace />} />
-          <Route path="/dashboard/hospital" element={<Hospital />} />
+          <Route index element={<Navigate to="/dashboard/chatbot" replace />} />
+          <Route path="/dashboard/chatbot" element={<Chatbot />} />
           <Route path="/dashboard/activation" element={<Activation />} />
         </Route>
 

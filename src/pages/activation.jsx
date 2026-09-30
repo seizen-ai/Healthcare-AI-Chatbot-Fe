@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { hospitalService } from '../services/hospital.service.js';
+import { chatbotService } from '../services/chatbot.service.js';
 import {
     Building2,
     CheckCircle2,
@@ -13,7 +13,7 @@ import {
 } from 'lucide-react';
 
 export default function Activation() {
-    const [hospitals, setHospitals] = useState([]);
+    const [chatbots, setChatbots] = useState([]);
     const [isFetching, setIsFetching] = useState(true);
     const [fetchError, setFetchError] = useState(null);
     const [activatingId, setActivatingId] = useState(null);
@@ -23,7 +23,7 @@ export default function Activation() {
     const [selectedFiles, setSelectedFiles] = useState([]);
     const [uploadedDocs, setUploadedDocs] = useState([]);
 
-    const handleFileChange = async (e, hospitalId) => {
+    const handleFileChange = async (e, chatbotId) => {
         const files = Array.from(e.target.files);
         setSelectedFiles(files);
         if (files.length === 0) {
@@ -33,7 +33,7 @@ export default function Activation() {
         try {
             const uploads = await Promise.all(
                 files.map(file =>
-                    hospitalService.uploadKnowledgeDocs(hospitalId, file).then(res => ({
+                    chatbotService.uploadKnowledgeDocs(chatbotId, file).then(res => ({
                         // Use the exact values returned by the backend upload response
                         fileName: res.fileName,
                         mimeType: res.mimeType,
@@ -53,17 +53,17 @@ export default function Activation() {
     const [copiedSnippet, setCopiedSnippet] = useState(null);
     const [revealedWidgets, setRevealedWidgets] = useState({});
 
-    const fetchHospitals = useCallback(async () => {
+    const fetchChatbots = useCallback(async () => {
         setIsFetching(true);
         setFetchError(null);
         try {
-            const result = await hospitalService.getHospitals({ limit: 10 });
-            setHospitals(result.data);
+            const result = await chatbotService.getChatbots({ limit: 10 });
+            setChatbots(result.data);
         } catch (err) {
             if (err.response?.status === 404) {
-                setHospitals([]);
+                setChatbots([]);
             } else {
-                setFetchError('Failed to load hospitals. Please try again.');
+                setFetchError('Failed to load chatbots. Please try again.');
             }
         } finally {
             setIsFetching(false);
@@ -71,24 +71,24 @@ export default function Activation() {
     }, []);
 
     useEffect(() => {
-        fetchHospitals();
-    }, [fetchHospitals]);
+        fetchChatbots();
+    }, [fetchChatbots]);
 
-    const handleActivate = async (hospital) => {
+    const handleActivate = async (chatbot) => {
         if (crawlType === 'website_crawl' && !consentChecked) {
             alert('Please confirm that the website is available.');
             return;
         }
 
-        setActivatingId(hospital._id);
+        setActivatingId(chatbot._id);
         try {
             const payload = {
                 type: crawlType,
             };
             if (crawlType === 'website_crawl') {
-                payload.websiteUrl = hospital.website?.url;
+                payload.websiteUrl = chatbot.website?.url;
                 if (!payload.websiteUrl) {
-                    alert('Hospital does not have a website URL set.');
+                    alert('Chatbot does not have a website URL set.');
                     return;
                 }
             } else if (crawlType === 'document_crawl') {
@@ -99,12 +99,12 @@ export default function Activation() {
                 payload.documents = uploadedDocs;
             }
 
-            await hospitalService.activateBot(hospital._id, payload);
+            await chatbotService.activateBot(chatbot._id, payload);
             setActivationMenuId(null);
             setCrawlType('website_crawl');
             setConsentChecked(false);
             setSelectedFiles([]);
-            await fetchHospitals();
+            await fetchChatbots();
         } catch (err) {
             console.error('Failed to activate bot:', err);
             const msg = err.response?.data?.message || err.message || 'Failed to activate bot.';
@@ -127,25 +127,25 @@ export default function Activation() {
     const isFailed = (h) => !isReady(h) && h.onboarding?.step === 'crawler_failed';
     const isActivated = (h) => isReady(h);
 
-    const StatusBadge = ({ hospital }) => {
-        if (isReady(hospital)) {
+    const StatusBadge = ({ chatbot }) => {
+        if (isReady(chatbot)) {
             return <span className="hosp-badge-active">Active</span>;
         }
-        if (isProcessing(hospital)) {
+        if (isProcessing(chatbot)) {
             return (
                 <span className="act-badge act-badge-processing">
                     <Loader2 size={11} className="spin" /> Processing
                 </span>
             );
         }
-        if (isCrawling(hospital)) {
+        if (isCrawling(chatbot)) {
             return (
                 <span className="act-badge act-badge-crawling">
                     <Loader2 size={11} className="spin" /> Crawling
                 </span>
             );
         }
-        if (isFailed(hospital)) {
+        if (isFailed(chatbot)) {
             return <span className="act-badge act-badge-failed"><AlertCircle size={11} /> Failed</span>;
         }
         return <span className="act-badge act-badge-idle"><Clock size={11} /> Not activated</span>;
@@ -155,7 +155,7 @@ export default function Activation() {
         return (
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 14 }}>
                 <Loader2 size={28} className="spin" style={{ color: 'var(--color-teal)' }} />
-                <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Loading hospitals…</p>
+                <p style={{ fontSize: 13, color: 'var(--color-text-muted)' }}>Loading chatbots…</p>
             </div>
         );
     }
@@ -169,7 +169,7 @@ export default function Activation() {
                     <p className="hosp-subtitle">Activate your assistant and get the embed script.</p>
                 </div>
                 <button
-                    onClick={fetchHospitals}
+                    onClick={fetchChatbots}
                     className="hosp-btn-primary"
                 >
                     Refresh status
@@ -185,35 +185,35 @@ export default function Activation() {
             )}
 
             {/* Empty */}
-            {!isFetching && hospitals.length === 0 && !fetchError && (
+            {!isFetching && chatbots.length === 0 && !fetchError && (
                 <div className="hosp-empty">
                     <div className="hosp-empty-icon"><Building2 size={28} /></div>
-                    <h3 className="hosp-empty-title">No Hospitals Found</h3>
-                    <p className="hosp-empty-desc">You need to create a hospital first before activating the bot.</p>
+                    <h3 className="hosp-empty-title">No Chatbots Found</h3>
+                    <p className="hosp-empty-desc">You need to create a chatbot first before activating the bot.</p>
                 </div>
             )}
 
             {/* Cards */}
-            {hospitals.length > 0 && (
+            {chatbots.length > 0 && (
                 <div className="hosp-card-list">
-                    {hospitals.map(hospital => (
-                        <div key={hospital._id} className="hosp-card card-enter">
+                    {chatbots.map(chatbot => (
+                        <div key={chatbot._id} className="hosp-card card-enter">
                             <div className="hosp-card-content">
                                 {/* Header */}
                                 <div className="hosp-card-header">
-                                    <h3 className="hosp-card-name">{hospital.name}</h3>
-                                    <StatusBadge hospital={hospital} />
+                                    <h3 className="hosp-card-name">{chatbot.name}</h3>
+                                    <StatusBadge chatbot={chatbot} />
                                 </div>
 
                                 {/* Subtitle */}
                                 <div className="hosp-card-slug">
-                                    {hospital.website?.url || 'southcityhospital.com'}
+                                    {chatbot.website?.url}
                                 </div>
 
                                 {/* Activate button (not yet activated) */}
-                                {!isReady(hospital) && !isCrawling(hospital) && !isProcessing(hospital) && (
+                                {!isReady(chatbot) && !isCrawling(chatbot) && !isProcessing(chatbot) && (
                                     <div style={{ marginTop: 14 }}>
-                                        {activationMenuId === hospital._id ? (
+                                        {activationMenuId === chatbot._id ? (
                                             <div className="hosp-activation-menu" style={{ padding: '12px', border: '1px solid var(--color-border)', borderRadius: '8px', marginTop: '10px' }}>
                                                 <div style={{ marginBottom: '10px' }}>
                                                     <label style={{ fontSize: '14px', fontWeight: '500', marginBottom: '6px', display: 'block' }}>Crawl Type</label>
@@ -231,13 +231,13 @@ export default function Activation() {
                                                     <div style={{ marginBottom: '12px', display: 'flex', alignItems: 'flex-start', gap: '8px' }}>
                                                         <input
                                                             type="checkbox"
-                                                            id={`consent-${hospital._id}`}
+                                                            id={`consent-${chatbot._id}`}
                                                             checked={consentChecked}
                                                             onChange={(e) => setConsentChecked(e.target.checked)}
                                                             style={{ marginTop: '4px' }}
                                                         />
-                                                        <label htmlFor={`consent-${hospital._id}`} style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
-                                                            I confirm that the website ({hospital.website?.url || 'N/A'}) is publicly available and accessible. If it is unreachable or private, the crawl may fail.
+                                                        <label htmlFor={`consent-${chatbot._id}`} style={{ fontSize: '13px', color: 'var(--color-text-muted)', lineHeight: '1.4' }}>
+                                                            I confirm that the website ({chatbot.website?.url || 'N/A'}) is publicly available and accessible. If it is unreachable or private, the crawl may fail.
                                                         </label>
                                                     </div>
                                                 )}
@@ -250,7 +250,7 @@ export default function Activation() {
                                                         <input
                                                             type="file"
                                                             multiple
-                                                            onChange={(e) => handleFileChange(e, hospital._id)}
+                                                            onChange={(e) => handleFileChange(e, chatbot._id)}
                                                             style={{
                                                                 width: '100%',
                                                                 padding: '6px',
@@ -270,19 +270,19 @@ export default function Activation() {
 
                                                 <div style={{ display: 'flex', gap: '8px' }}>
                                                     <button
-                                                        onClick={() => handleActivate(hospital)}
-                                                        disabled={activatingId === hospital._id || (crawlType === 'website_crawl' && !consentChecked) || (crawlType === 'document_crawl' && uploadedDocs.length === 0)}
+                                                        onClick={() => handleActivate(chatbot)}
+                                                        disabled={activatingId === chatbot._id || (crawlType === 'website_crawl' && !consentChecked) || (crawlType === 'document_crawl' && uploadedDocs.length === 0)}
                                                         className="hosp-btn-primary"
                                                         style={{ flex: 1, justifyContent: 'center' }}
                                                     >
-                                                        {activatingId === hospital._id
+                                                        {activatingId === chatbot._id
                                                             ? <><Loader2 size={14} className="spin" />Activating…</>
                                                             : 'Start Activation'
                                                         }
                                                     </button>
                                                     <button
                                                         onClick={() => setActivationMenuId(null)}
-                                                        disabled={activatingId === hospital._id}
+                                                        disabled={activatingId === chatbot._id}
                                                         className="hosp-btn-secondary"
                                                         style={{ padding: '8px 12px', border: '1px solid var(--color-border)', borderRadius: '6px', backgroundColor: 'transparent', color: 'var(--color-text)', cursor: 'pointer' }}
                                                     >
@@ -292,7 +292,7 @@ export default function Activation() {
                                             </div>
                                         ) : (
                                             <button
-                                                onClick={() => setActivationMenuId(hospital._id)}
+                                                onClick={() => setActivationMenuId(chatbot._id)}
                                                 className="hosp-btn-primary"
                                                 style={{ width: '100%', justifyContent: 'center' }}
                                             >
@@ -304,10 +304,10 @@ export default function Activation() {
 
                                 {/* Once crawler is done and status becomes active:
                                     Only show "Generate Copyable widget" button until clicked */}
-                                {isReady(hospital) && !revealedWidgets[hospital._id] && (
+                                {isReady(chatbot) && !revealedWidgets[chatbot._id] && (
                                     <div style={{ marginTop: 14 }}>
                                         <button
-                                            onClick={() => setRevealedWidgets(prev => ({ ...prev, [hospital._id]: true }))}
+                                            onClick={() => setRevealedWidgets(prev => ({ ...prev, [chatbot._id]: true }))}
                                             className="hosp-btn-primary"
                                         >
                                             Generate Copyable widget
@@ -316,21 +316,21 @@ export default function Activation() {
                                 )}
 
                                 {/* Once user clicks "Generate Copyable widget": show embed widget */}
-                                {isReady(hospital) && revealedWidgets[hospital._id] && (
+                                {isReady(chatbot) && revealedWidgets[chatbot._id] && (
                                     <div className="act-embed-container">
                                         <div className="act-embed-heading">
                                             Embed widget
                                         </div>
                                         <div className="hosp-key-box act-code-box">
                                             <code className="act-code-text">
-                                                {`<script src="widget.js" data-public-key="${hospital.publicKey ? hospital.publicKey.slice(0, 5) + '...' : '61584...'}">`}
+                                                {`<script src="widget.js" data-public-key="${chatbot.publicKey ? chatbot.publicKey.slice(0, 5) + '...' : '61584...'}">`}
                                             </code>
                                             <button
-                                                onClick={() => handleCopySnippet(hospital.publicKey)}
+                                                onClick={() => handleCopySnippet(chatbot.publicKey)}
                                                 className="hosp-copy-btn"
                                                 title="Copy snippet"
                                             >
-                                                {copiedSnippet === hospital.publicKey
+                                                {copiedSnippet === chatbot.publicKey
                                                     ? <Check size={13} style={{ color: '#20C997' }} />
                                                     : <Copy size={13} />
                                                 }

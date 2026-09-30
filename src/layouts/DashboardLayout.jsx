@@ -7,7 +7,7 @@ import { LogOut, Menu, X } from 'lucide-react';
 
 const NAV = [
     { name: 'Overview',          href: '/dashboard' },
-    { name: 'Hospital',          href: '/dashboard/hospital' },
+    { name: 'Chatbot',          href: '/dashboard/chatbot' },
     { name: 'Activation',        href: '/dashboard/activation' },
     { name: 'AI configuration',  href: '/dashboard/ai' },
 ];

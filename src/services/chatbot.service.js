@@ -1,19 +1,19 @@
 import apiClient from './api';
 
-export const hospitalService = {
-    createHospital: async (hospitalData) => {
+export const chatbotService = {
+    createChatbot: async (chatbotData) => {
         const idempotencyKey = crypto.randomUUID();
-        const response = await apiClient.post('/hospital/create-hospital', hospitalData, {
+        const response = await apiClient.post('/chatbot/create-chatbot', chatbotData, {
             headers: {
                 'x-idempotency-key': idempotencyKey,
             },
         });
         return response.data;
     },
-    getHospitals: async ({ cursor, limit = 10 } = {}) => {
+    getChatbots: async ({ cursor, limit = 10 } = {}) => {
         const params = { limit };
         if (cursor) params.cursor = cursor;
-        const response = await apiClient.get('/hospital/get-hospitals', { params });
+        const response = await apiClient.get('/chatbot/get-chatbots', { params });
 
         const payload = response.data?.data ?? response.data;
 
@@ -26,20 +26,20 @@ export const hospitalService = {
 
         return { data: [], nextCursor: null };
     },
-    activateBot: async (hospitalId, payload) => {
-        const response = await apiClient.post(`/hospital/${hospitalId}/activate`, payload);
+    activateBot: async (chatbotId, payload) => {
+        const response = await apiClient.post(`/chatbot/${chatbotId}/activate`, payload);
         return response.data;
     },
     // New method to upload a knowledge document file
-    uploadKnowledgeDocs: async (hospitalId, file) => {
+    uploadKnowledgeDocs: async (chatbotId, file) => {
         const form = new FormData();
         form.append('file', file);
         const response = await apiClient.post(
-            `/hospital/${hospitalId}/file/upload`,
+            `/chatbot/${chatbotId}/file/upload`,
             form,
             {
                 headers: {
-                    // Let the browser set the multipart boundary
+                    // Let the browser set the multipart boundary -> we are streaming the file to the blackbaze B2 servers/cloud object storage
                     'Content-Type': 'multipart/form-data',
                 },
             }

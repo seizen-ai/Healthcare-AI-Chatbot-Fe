@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { hospitalService } from '../services/hospital.service';
+import { chatbotService } from '../services/chatbot.service';
 import {
     Globe,
     Mail,
@@ -47,8 +47,8 @@ const COMMON_TIMEZONES = [
     'Australia/Sydney'
 ];
 
-export default function Hospital() {
-    const [hospitals, setHospitals] = useState([]);
+export default function Chatbot() {
+    const [chatbots, setChatbots] = useState([]);
     const [nextCursor, setNextCursor] = useState(null);
     const [isFetchingList, setIsFetchingList] = useState(true);
     const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -61,23 +61,23 @@ export default function Hospital() {
     const [formData, setFormData] = useState(INITIAL_FORM_STATE);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [submitError, setSubmitError] = useState(null);
-    const [createdHospital, setCreatedHospital] = useState(null);
+    const [createdChatbot, setCreatedChatbot] = useState(null);
     const [copiedKey, setCopiedKey] = useState(null);
 
-    // Fetch user's hospitals (initial load / refresh)
-    const fetchHospitals = useCallback(async () => {
+    // Fetch user's chatbots (initial load / refresh)
+    const fetchChatbots = useCallback(async () => {
         setIsFetchingList(true);
         setFetchError(null);
         try {
-            const result = await hospitalService.getHospitals();
-            setHospitals(result.data);
+            const result = await chatbotService.getChatbots();
+            setChatbots(result.data);
             setNextCursor(result.nextCursor);
         } catch (err) {
             if (err.response?.status === 404) {
-                setHospitals([]);
+                setChatbots([]);
                 setNextCursor(null);
             } else {
-                setFetchError(err.response?.data?.message || 'Failed to load your hospitals.');
+                setFetchError(err.response?.data?.message || 'Failed to load your chatbots.');
             }
         } finally {
             setIsFetchingList(false);
@@ -89,19 +89,19 @@ export default function Hospital() {
         if (!nextCursor || isLoadingMore) return;
         setIsLoadingMore(true);
         try {
-            const result = await hospitalService.getHospitals({ cursor: nextCursor });
-            setHospitals(prev => [...prev, ...result.data]);
+            const result = await chatbotService.getChatbots({ cursor: nextCursor });
+            setChatbots(prev => [...prev, ...result.data]);
             setNextCursor(result.nextCursor);
         } catch (err) {
-            console.error('Error loading more hospitals:', err);
+            console.error('Error loading more chatbots:', err);
         } finally {
             setIsLoadingMore(false);
         }
     }, [nextCursor, isLoadingMore]);
 
     useEffect(() => {
-        fetchHospitals();
-    }, [fetchHospitals]);
+        fetchChatbots();
+    }, [fetchChatbots]);
 
     const handleCopyKey = (key) => {
         navigator.clipboard.writeText(key);
@@ -143,16 +143,16 @@ export default function Hospital() {
         if (formData.timezone.trim()) payload.timezone = formData.timezone.trim();
 
         try {
-            const result = await hospitalService.createHospital(payload);
-            setCreatedHospital(result);
+            const result = await chatbotService.createChatbot(payload);
+            setCreatedChatbot(result);
             setFormData(INITIAL_FORM_STATE);
-            fetchHospitals();
+            fetchChatbots();
         } catch (err) {
-            console.error('Failed to create hospital:', err);
+            console.error('Failed to create chatbot:', err);
             const message =
                 err.response?.data?.message ||
                 (err.response?.data?.errors && err.response.data.errors[0]?.message) ||
-                'Failed to create hospital. Please check the details and try again.';
+                'Failed to create chatbot. Please check the details and try again.';
             setSubmitError(message);
         } finally {
             setIsSubmitting(false);
@@ -164,7 +164,7 @@ export default function Hospital() {
             {/* ── Page Header ── */}
             <div className="hosp-header">
                 <div className="hosp-header-left">
-                    <h1 className="hosp-title">Hospital management</h1>
+                    <h1 className="hosp-title">Chatbot management</h1>
                     <p className="hosp-subtitle">Registered organizations</p>
                 </div>
 
@@ -174,7 +174,7 @@ export default function Hospital() {
                             className="hosp-btn-secondary"
                             onClick={() => {
                                 setActiveView('list');
-                                setCreatedHospital(null);
+                                setCreatedChatbot(null);
                                 setSubmitError(null);
                             }}
                         >
@@ -186,10 +186,10 @@ export default function Hospital() {
                             className="hosp-btn-primary"
                             onClick={() => {
                                 setActiveView('create');
-                                setCreatedHospital(null);
+                                setCreatedChatbot(null);
                             }}
                         >
-                            Create hospital
+                            Create chatbot
                         </button>
                     )}
                 </div>
@@ -203,7 +203,7 @@ export default function Hospital() {
                         <div className="hosp-alert hosp-alert-error">
                             <AlertCircle size={16} />
                             <span>{fetchError}</span>
-                            <button onClick={fetchHospitals} className="hosp-alert-action">Try Again</button>
+                            <button onClick={fetchChatbots} className="hosp-alert-action">Try Again</button>
                         </div>
                     )}
 
@@ -221,55 +221,55 @@ export default function Hospital() {
                     )}
 
                     {/* Empty state */}
-                    {!isFetchingList && hospitals.length === 0 && !fetchError && (
+                    {!isFetchingList && chatbots.length === 0 && !fetchError && (
                         <div className="hosp-empty">
                             <div className="hosp-empty-icon">
                                 <Building2 size={28} />
                             </div>
-                            <h3 className="hosp-empty-title">No hospitals registered yet</h3>
-                            <p className="hosp-empty-desc">Register your first hospital organization to start provisioning AI healthcare agents.</p>
+                            <h3 className="hosp-empty-title">No chatbots registered yet</h3>
+                            <p className="hosp-empty-desc">Register your first chatbot organization to start provisioning AI healthcare agents.</p>
                             <button
                                 className="hosp-btn-primary"
                                 onClick={() => setActiveView('create')}
                             >
                                 <Plus size={14} />
-                                Create Your First Hospital
+                                Create Your First Chatbot
                             </button>
                         </div>
                     )}
 
-                    {/* Hospital list */}
-                    {!isFetchingList && hospitals.length > 0 && (
+                    {/* Chatbot list */}
+                    {!isFetchingList && chatbots.length > 0 && (
                         <div className="hosp-card-list">
-                            {hospitals.map((hospital) => (
+                            {chatbots.map((chatbot) => (
                                 <div
-                                    key={hospital._id || hospital.slug || hospital.name}
+                                    key={chatbot._id || chatbot.slug || chatbot.name}
                                     className="hosp-card card-enter"
                                 >
                                     <div className="hosp-card-content">
                                         {/* Card header */}
                                         <div className="hosp-card-header">
-                                            <h3 className="hosp-card-name">{hospital.name}</h3>
+                                            <h3 className="hosp-card-name">{chatbot.name}</h3>
                                             <span className="hosp-badge-active">Active</span>
                                         </div>
 
                                         {/* Subtitle / slug */}
                                         <div className="hosp-card-slug">
-                                            {hospital.slug || hospital.website?.url || 'south-city-hospital'}
+                                            {chatbot.slug || chatbot.website?.url || 'south-city-chatbot'}
                                         </div>
 
                                         {/* Public Key Row */}
                                         <div className="hosp-key-box">
                                             <span className="hosp-key-value">
-                                                {hospital.publicKey || 'Public API key'}
+                                                {chatbot.publicKey || 'Public API key'}
                                             </span>
-                                            {hospital.publicKey && (
+                                            {chatbot.publicKey && (
                                                 <button
-                                                    onClick={() => handleCopyKey(hospital.publicKey)}
+                                                    onClick={() => handleCopyKey(chatbot.publicKey)}
                                                     className="hosp-copy-btn"
                                                     title="Copy public API key"
                                                 >
-                                                    {copiedKey === hospital.publicKey
+                                                    {copiedKey === chatbot.publicKey
                                                         ? <Check size={13} style={{ color: '#20C997' }} />
                                                         : <Copy size={13} />
                                                     }
@@ -304,18 +304,18 @@ export default function Hospital() {
             {activeView === 'create' && (
                 <div className="hosp-form-section">
                     {/* Success */}
-                    {createdHospital && (
+                    {createdChatbot && (
                         <div className="hosp-alert hosp-alert-success">
                             <CheckCircle2 size={16} />
                             <div style={{ flex: 1 }}>
-                                <strong>{createdHospital.name}</strong> has been registered successfully.
-                                {createdHospital.publicKey && (
+                                <strong>{createdChatbot.name}</strong> has been registered successfully.
+                                {createdChatbot.publicKey && (
                                     <div className="hosp-key-row" style={{ marginTop: 10 }}>
                                         <span className="hosp-key-label" style={{ display: 'flex', alignItems: 'center', gap: 4 }}><Key size={11} />Public Key</span>
                                         <div className="hosp-key-value-row">
-                                            <span className="hosp-key-value">{createdHospital.publicKey}</span>
-                                            <button onClick={() => handleCopyKey(createdHospital.publicKey)} className="hosp-copy-btn">
-                                                {copiedKey === createdHospital.publicKey ? <Check size={13} /> : <Copy size={13} />}
+                                            <span className="hosp-key-value">{createdChatbot.publicKey}</span>
+                                            <button onClick={() => handleCopyKey(createdChatbot.publicKey)} className="hosp-copy-btn">
+                                                {copiedKey === createdChatbot.publicKey ? <Check size={13} /> : <Copy size={13} />}
                                             </button>
                                         </div>
                                     </div>
@@ -339,10 +339,10 @@ export default function Hospital() {
                             <h2 className="hosp-form-section-title">Basic Information</h2>
                             <div className="hosp-form-grid-2">
                                 <div className="hosp-field">
-                                    <label className="hosp-label">Hospital Name <span className="req">*</span></label>
+                                    <label className="hosp-label">Chatbot Name <span className="req">*</span></label>
                                     <input
                                         type="text" name="name" required maxLength={150}
-                                        placeholder="e.g. City General Hospital"
+                                        placeholder="e.g. City General Chatbot"
                                         value={formData.name} onChange={handleFormChange}
                                         className="hosp-input"
                                     />
@@ -353,7 +353,7 @@ export default function Hospital() {
                                         <Globe size={14} className="hosp-input-icon" />
                                         <input
                                             type="url" name="websiteUrl" required
-                                            placeholder="https://hospital.example.com"
+                                            placeholder="https://chatbot.example.com"
                                             value={formData.websiteUrl} onChange={handleFormChange}
                                             className="hosp-input hosp-input-with-icon"
                                         />
@@ -370,7 +370,7 @@ export default function Hospital() {
                                     <label className="hosp-label">Contact Email</label>
                                     <div className="hosp-input-icon-wrap">
                                         <Mail size={14} className="hosp-input-icon" />
-                                        <input type="email" name="email" placeholder="contact@hospital.com"
+                                        <input type="email" name="email" placeholder="contact@chatbot.com"
                                             value={formData.email} onChange={handleFormChange}
                                             className="hosp-input hosp-input-with-icon" />
                                     </div>
@@ -441,7 +441,7 @@ export default function Hospital() {
                                 <button type="submit" disabled={isSubmitting} className="hosp-btn-primary">
                                     {isSubmitting
                                         ? <><Loader2 size={14} className="spin" />Registering…</>
-                                        : 'Register Hospital'
+                                        : 'Register Chatbot'
                                     }
                                 </button>
                             </div>

@@ -419,7 +419,7 @@ code, pre, kbd { font-family: var(--font-mono); }
 .spin { animation: spin 0.7s linear infinite; }
 
 /* ════════════════════════════════════════
-   HOSPITAL & ACTIVATION PAGES
+   CHATBOT & ACTIVATION PAGES
    ════════════════════════════════════════ */
 
 .hosp-page {
@@ -616,7 +616,7 @@ code, pre, kbd { font-family: var(--font-mono); }
 .act-badge-failed     { background: rgba(220,38,38,0.1);   color: #f87171; border: 1px solid rgba(220,38,38,0.2); }
 .act-badge-idle       { background: #162032; color: #8896ad; border: 1px solid #1e293b; }
 
-/* ── Key box (Hospital page) ── */
+/* ── Key box (Chatbot page) ── */
 .hosp-key-box {
   display: flex;
   align-items: center;
